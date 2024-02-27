@@ -1,23 +1,23 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func main() {
-	// Leggo il percorso della directory dalla riga di comando
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run main.go <directory_path>")
 		return
 	}
 	directoryPath := os.Args[1]
 
-	// Leggo il contenuto della directory
 	files, err := ioutil.ReadDir(directoryPath)
 	if err != nil {
 		fmt.Printf("Error reading directory: %v\n", err)
@@ -25,37 +25,41 @@ func main() {
 	}
 
 	for _, file := range files {
-		// Costruisco il percorso completo del file
 		filePath := filepath.Join(directoryPath, file.Name())
 
-		// Eseguo il comando FFmpeg
 		cmd := exec.Command("ffmpeg", "-i", filePath)
-		output, err := cmd.CombinedOutput()
+		stderr, _ := cmd.StderrPipe()
+		cmd.Start()
 
-		// Controllo gli errori
-		if err != nil {
-			// Stampo l'output di FFmpeg per diagnosticare l'errore
-			fmt.Println("Errore durante l'esecuzione di FFmpeg:")
-			fmt.Println(string(output))
-			fmt.Println("Errore:", err)
-			continue // Passo al prossimo file
-		}
-
-		// Conversione dei byte di output in stringa
-		outputString := string(output)
-
-		// Ricerca della riga contenente la data di acquisizione
-		lines := strings.Split(outputString, "\n")
-		for _, line := range lines {
+		scanner := bufio.NewScanner(stderr)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			line := scanner.Text()
 			if strings.Contains(line, "creation_time") {
-				// Estrazione della data di acquisizione
 				parts := strings.Split(line, ":")
 				if len(parts) >= 2 {
-					acquisitionDate := strings.TrimSpace(parts[1])
-					fmt.Println("Data di acquisizione per", file.Name(), ":", acquisitionDate)
+					acquisitionDate := strings.TrimSpace(strings.Join(parts[1:], ":"))
+					date, err := time.Parse("2006-01-02T15:04:05.000000Z", acquisitionDate)
+					if err != nil {
+						fmt.Println("Error parsing date:", err)
+						continue
+					}
+					fmt.Println("Acquisition date for", file.Name(), ":", date.Year(), date.Month(), date.Day())
+
+					// Rename the file
+					newFileName := fmt.Sprintf("%d-%02d-%02d-%02d-%02d%s", date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), filepath.Ext(file.Name()))
+					newFilePath := filepath.Join(directoryPath, newFileName)
+					err = os.Rename(filePath, newFilePath)
+					if err != nil {
+						fmt.Println("Error renaming file:", err)
+					} else {
+						fmt.Println("Renamed", file.Name(), "to", newFileName)
+					}
 					break
 				}
 			}
 		}
+
+		cmd.Wait()
 	}
 }
