@@ -24,5 +24,3 @@ The program uses `ffmpeg` to extract metadata from each video file. It then pars
 
 The program currently only works with video files that have a `creation_time` in their metadata. Not all videos may have this metadata, depending on how they were recorded and processed.
 
-```
-```
