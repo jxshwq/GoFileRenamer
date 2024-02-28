@@ -1,4 +1,4 @@
-![Demo](DEMO.gif)
+![DEMO](https://github.com/jxshwq/GoFileRenamer/assets/116027976/d5da5e2d-0097-447b-ad19-526d2e618fe0)
 
 # Video Metadata Extractor
 
