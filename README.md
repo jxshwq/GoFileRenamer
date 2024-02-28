@@ -1,3 +1,5 @@
+![Demo](DEMO.gif)
+
 # Video Metadata Extractor
 
 This Go program extracts the creation date from video files in a specified directory and renames the files with the formatted date.
