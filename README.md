@@ -1,4 +1,4 @@
-# <span style="font-size: 36px; color: red; background-color: orange; padding: 10px;">Video Metadata Extractor</span>
+# Video Metadata Extractor
 
 This Go program extracts the creation date from video files in a specified directory and renames the files with the formatted date.
 
