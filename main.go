@@ -64,6 +64,7 @@ func main() {
 					} else {
 						fmt.Println("Renamed", file.Name(), "to", newFileName)
 					}
+					fmt.Println()
 					break
 				}
 			}
